@@ -7,7 +7,8 @@ import {
   orderBy, 
   Timestamp,
   doc,
-  getDoc
+  getDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { ContractData } from '../types';
@@ -105,5 +106,17 @@ export async function getMyContracts() {
     })) as SavedContract[];
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
+  }
+}
+
+export async function deleteContract(contractId: string) {
+  if (!auth.currentUser) throw new Error("Usuário não autenticado");
+
+  const path = `contracts/${contractId}`;
+  try {
+    const contractRef = doc(db, 'contracts', contractId);
+    await deleteDoc(contractRef);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }

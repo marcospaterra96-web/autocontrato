@@ -44,7 +44,7 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ data, classNam
       </div>
 
       <div className="mb-6">
-        <p className="font-bold">DOCUMENTAÇÃO EXERCICIO 2026 TUDO OK</p>
+        <p className="font-bold">{data.veiculoDocumentacao || 'DOCUMENTAÇÃO EXERCICIO 2026 TUDO OK'}</p>
         <p className="mt-2">
           <strong>3.1</strong> Constitui Objeto do contrato de Aluguel com Direito de Compra ,o veículo (carro ou moto) acima Descrito (item 3) para a 
           posse e uso do carro pelo cliente, exclusivamente em territorio nacional, durante o pagamento dos aluguéis (parcelas)do veículo, 

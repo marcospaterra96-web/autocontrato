@@ -16,6 +16,7 @@ export interface ContractData {
   veiculoRenavam: string;
   veiculoChassis: string;
   veiculoNomeFinanciado: string;
+  veiculoDocumentacao: string;
 
   // Pagamento
   valorEntrada: number;

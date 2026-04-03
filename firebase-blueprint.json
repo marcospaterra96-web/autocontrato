@@ -19,6 +19,7 @@
         "veiculoRenavam": { "type": "string", "description": "Vehicle RENAVAM" },
         "veiculoChassis": { "type": "string", "description": "Vehicle chassis number" },
         "veiculoNomeFinanciado": { "type": "string", "description": "Owner/Financed name on vehicle document" },
+        "veiculoDocumentacao": { "type": "string", "description": "Vehicle documentation status" },
         "valorEntrada": { "type": "number", "description": "Down payment amount" },
         "valorParcela": { "type": "number", "description": "Installment amount" },
         "numeroParcelas": { "type": "number", "description": "Number of installments" },

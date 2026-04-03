@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getMyContracts, SavedContract } from '../services/contractService';
-import { FileText, Calendar, User, Car, Loader2, ChevronRight, Search } from 'lucide-react';
+import { getMyContracts, SavedContract, deleteContract } from '../services/contractService';
+import { FileText, Calendar, User, Car, Loader2, ChevronRight, Search, Trash2, AlertTriangle, X } from 'lucide-react';
 import { ContractData } from '../types';
+import { cn } from '../lib/utils';
 
 interface HistoryProps {
   onSelect: (contract: ContractData) => void;
@@ -11,20 +12,39 @@ export const History: React.FC<HistoryProps> = ({ onSelect }) => {
   const [contracts, setContracts] = useState<SavedContract[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [contractToDelete, setContractToDelete] = useState<SavedContract | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const fetchContracts = async () => {
+    try {
+      const data = await getMyContracts();
+      setContracts(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar contratos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchContracts = async () => {
-      try {
-        const data = await getMyContracts();
-        setContracts(data);
-      } catch (error) {
-        console.error("Erro ao buscar contratos:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchContracts();
   }, []);
+
+  const handleDelete = async () => {
+    if (!contractToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteContract(contractToDelete.id);
+      setContracts(prev => prev.filter(c => c.id !== contractToDelete.id));
+      setContractToDelete(null);
+    } catch (error) {
+      console.error("Erro ao excluir contrato:", error);
+      alert("Erro ao excluir contrato. Verifique suas permissões.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const filteredContracts = contracts.filter(c => 
     c.locatarioNome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,18 +87,28 @@ export const History: React.FC<HistoryProps> = ({ onSelect }) => {
           {filteredContracts.map((contract) => (
             <div 
               key={contract.id}
+              className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-all cursor-pointer group relative"
               onClick={() => onSelect(contract)}
-              className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-all cursor-pointer group"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                   <Car size={24} />
                 </div>
-                <div className="text-right">
+                <div className="flex flex-col items-end gap-2">
                   <p className="text-xs text-gray-400 flex items-center gap-1 justify-end">
                     <Calendar size={12} />
                     {contract.createdAt.toDate().toLocaleDateString('pt-BR')}
                   </p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setContractToDelete(contract);
+                    }}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                    title="Excluir Contrato"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
               </div>
 
@@ -104,6 +134,54 @@ export const History: React.FC<HistoryProps> = ({ onSelect }) => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      {contractToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600">
+                <AlertTriangle size={24} />
+              </div>
+              <button 
+                onClick={() => setContractToDelete(null)}
+                className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Excluir Contrato?</h3>
+            <p className="text-gray-500 mb-6">
+              Tem certeza que deseja excluir o contrato de <strong>{contractToDelete.locatarioNome}</strong>? Esta ação não pode ser desfeita.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setContractToDelete(null)}
+                disabled={isDeleting}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex-1 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-all shadow-lg shadow-red-100 flex items-center justify-center gap-2 disabled:bg-red-400"
+              >
+                {isDeleting ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <>
+                    <Trash2 size={18} />
+                    Excluir
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

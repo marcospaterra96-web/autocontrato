@@ -22,6 +22,7 @@ const contractSchema = z.object({
   veiculoRenavam: z.string().min(1, "RENAVAM é obrigatória"),
   veiculoChassis: z.string().min(1, "CHASSIS é obrigatório"),
   veiculoNomeFinanciado: z.string().min(1, "Nome do proprietário é obrigatório"),
+  veiculoDocumentacao: z.string().min(1, "Documentação é obrigatória"),
 
   valorEntrada: z.number().min(0),
   valorParcela: z.number().min(0),
@@ -52,6 +53,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({ initialData, onChang
       dataEntrega: '2026-03-27',
       horaEntrega: '14:00',
       localEntrega: 'posto de combustivel da cidade de taquarituba sp',
+      veiculoDocumentacao: 'DOCUMENTAÇÃO EXERCICIO 2026 TUDO OK',
       ...initialData
     }
   });
@@ -89,6 +91,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({ initialData, onChang
           <Input label="RENAVAM" {...register('veiculoRenavam')} error={errors.veiculoRenavam?.message} />
           <Input label="CHASSIS" {...register('veiculoChassis')} error={errors.veiculoChassis?.message} />
           <Input label="Proprietário/Financiado" {...register('veiculoNomeFinanciado')} error={errors.veiculoNomeFinanciado?.message} />
+          <Input label="Status da Documentação" {...register('veiculoDocumentacao')} error={errors.veiculoDocumentacao?.message} className="md:col-span-2" />
         </div>
       </div>
 

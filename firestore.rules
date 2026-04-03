@@ -22,6 +22,7 @@ service cloud.firestore {
     //   - veiculoRenavam: string
     //   - veiculoChassis: string
     //   - veiculoNomeFinanciado: string
+    //   - veiculoDocumentacao: string
     //   - valorEntrada: number
     //   - valorParcela: number
     //   - numeroParcelas: number
