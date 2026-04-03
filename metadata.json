@@ -1,0 +1,5 @@
+{
+  "name": "Auto Gerador de Contratos VMP Veículos",
+  "description": "Sistema de preenchimento automático de contratos de aluguel e venda de veículos através de upload de documentos (CNH, CRLV, Comprovante de Residência) com IA.",
+  "requestFramePermissions": ["camera"]
+}

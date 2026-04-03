@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: contracts
+    // Document ID: auto-generated
+    // Fields:
+    //   - locatarioNome: string (required)
+    //   - locatarioCpf: string (required)
+    //   - locatarioRg: string
+    //   - locatarioEndereco: string
+    //   - locatarioTelefone: string
+    //   - locatarioEmail: string
+    //   - veiculoMarca: string
+    //   - veiculoModelo: string
+    //   - veiculoCor: string
+    //   - veiculoCombustivel: string
+    //   - veiculoPlaca: string (required)
+    //   - veiculoRenavam: string
+    //   - veiculoChassis: string
+    //   - veiculoNomeFinanciado: string
+    //   - valorEntrada: number
+    //   - valorParcela: number
+    //   - numeroParcelas: number
+    //   - dataVencimentoPrimeira: string
+    //   - diaVencimento: number
+    //   - dataEntrega: string
+    //   - horaEntrega: string
+    //   - localEntrega: string
+    //   - userId: string (required) - UID of the owner
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "marcospaterra96@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidContract(data) {
+      return data.keys().hasAll(['locatarioNome', 'locatarioCpf', 'veiculoPlaca', 'userId', 'createdAt']) &&
+             data.locatarioNome is string && data.locatarioNome.size() < 200 &&
+             data.locatarioCpf is string && data.locatarioCpf.size() < 20 &&
+             data.veiculoPlaca is string && data.veiculoPlaca.size() < 10 &&
+             data.userId is string &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /contracts/{contractId} {
+      // Users can only read their own contracts
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Users can create contracts if they are the owner
+      allow create: if isAuthenticated() && 
+                    isValidContract(request.resource.data) && 
+                    request.resource.data.userId == request.auth.uid;
+      
+      // Users can update their own contracts
+      allow update: if isAuthenticated() && 
+                    isValidContract(request.resource.data) && 
+                    resource.data.userId == request.auth.uid &&
+                    request.resource.data.userId == resource.data.userId;
+      
+      // Only admins or owners can delete
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}
