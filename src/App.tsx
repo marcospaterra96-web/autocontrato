@@ -24,6 +24,7 @@ export default function App() {
   const [finalData, setFinalData] = useState<ContractData | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
+  const isAdmin = user?.email === 'marcospaterra96@gmail.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -127,7 +128,14 @@ export default function App() {
             </nav>
 
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-semibold text-gray-900">{user.email}</p>
+              <div className="flex items-center gap-2 justify-end">
+                {isAdmin && (
+                  <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wider border border-amber-200">
+                    Admin
+                  </span>
+                )}
+                <p className="text-sm font-semibold text-gray-900">{user.email}</p>
+              </div>
               <p className="text-xs text-gray-500">Usuário Autenticado</p>
             </div>
             <button

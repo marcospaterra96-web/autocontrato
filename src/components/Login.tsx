@@ -13,6 +13,11 @@ export const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      setError('Por favor, preencha todos os campos.');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
 
@@ -23,10 +28,17 @@ export const Login: React.FC = () => {
         await createUserWithEmailAndPassword(auth, email, password);
       }
     } catch (err: any) {
+      console.error('Erro de autenticação:', err);
       if (err.code === 'auth/operation-not-allowed') {
         setError('O login por E-mail/Senha não está ativado no Firebase Console. Use o botão "Entrar com Google" abaixo ou ative o provedor no console.');
+      } else if (err.code === 'auth/invalid-credential') {
+        setError('E-mail ou senha incorretos.');
+      } else if (err.code === 'auth/email-already-in-use') {
+        setError('Este e-mail já está em uso.');
+      } else if (err.code === 'auth/weak-password') {
+        setError('A senha deve ter pelo menos 6 caracteres.');
       } else {
-        setError(err.message || 'Erro ao autenticar');
+        setError(err.message || 'Erro ao autenticar. Tente novamente.');
       }
     } finally {
       setLoading(false);
@@ -55,6 +67,14 @@ export const Login: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold text-gray-900">VMP Veículos</h1>
           <p className="text-gray-500">Auto Gerador de Contratos</p>
+          
+          <div className="mt-6 bg-amber-50 border border-amber-100 p-3 rounded-xl text-amber-800 text-xs flex items-start gap-2 text-left">
+            <LogIn className="shrink-0 mt-0.5" size={14} />
+            <div>
+              <p className="font-bold mb-0.5">Aviso:</p>
+              <p>Se o login por e-mail falhar, use o botão <b>Google</b> abaixo. Se você é o dono, ative o provedor de e-mail no Firebase.</p>
+            </div>
+          </div>
         </div>
 
         <div className="p-8 space-y-6">
@@ -67,10 +87,10 @@ export const Login: React.FC = () => {
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-3 border border-gray-200 rounded-xl font-semibold flex items-center justify-center gap-3 hover:bg-gray-50 transition-all shadow-sm"
+            className="w-full py-3 border border-gray-200 rounded-xl font-semibold flex items-center justify-center gap-3 hover:bg-gray-50 transition-all shadow-sm bg-white"
           >
             <img src="https://www.gstatic.com/firebase/hub/sdk/impl/auth/google.png" className="w-5 h-5" alt="Google" />
-            Entrar com Google
+            {isLogin ? 'Entrar com Google' : 'Cadastrar com Google'}
           </button>
 
           <div className="relative">
